@@ -416,23 +416,22 @@ class ATES_obj:
         self.temp_out=temp_out
         return temp_out
         
-#if __name__ == "__main__":
-    # # Parameters
-    # thickness_aquifer = 20 #[m] Thickness of the aquifer (assuming homogenous and constant thickness)
-    # porosity = 0.2 #[-] porosity aquifer
-    # horizontal_conductivity = 10  #[m day^-1] Horizontal hydraulic conductivity
-    # anisotropy =10 #[-] Horizontal hydraulic conductivity/vertical hydraulic conductivity
-    # ground_temperature = 15 #[degrees C] Undisturbed ground temperature
-    # supplier = 0 
-    # ATES = ATES_obj(thickness=thickness_aquifer, porosity=porosity,kh=horizontal_conductivity, 
-    #                 ani=anisotropy,T_ground=ground_temperature,start_full_volume=1)
+# if __name__ == "__main__":
+#     # Parameters
+#     thickness_aquifer = 20 #[m] Thickness of the aquifer (assuming homogenous and constant thickness)
+#     porosity = 0.2 #[-] porosity aquifer
+#     horizontal_conductivity = 10  #[m day^-1] Horizontal hydraulic conductivity
+#     anisotropy =10 #[-] Horizontal hydraulic conductivity/vertical hydraulic conductivity
+#     ground_temperature = 15 #[degrees C] Undisturbed ground temperature
+#     supplier = 0 
+#     ATES = ATES_obj(thickness=thickness_aquifer, porosity=porosity,kh=horizontal_conductivity, 
+#                     ani=anisotropy,T_ground=ground_temperature,start_full_volume=1)
     
-    # Volume = 100000 #m^3/year, volume injected as well as extracted (assuming mass balance needs to be preserved)
-    # Temp_in = 70 #[degrees C] Temperature of the water going in the aquifer
-    # ATES.initialize(Volume, Temp_in, 3600) #Generates values for T_out
+#     Volume = 100000 #m^3/year, volume injected as well as extracted (assuming mass balance needs to be preserved)
+#     Temp_in = 70 #[degrees C] Temperature of the water going in the aquifer
+#     ATES.initialize(Volume, Temp_in, 3600) #Generates values for T_out
     
-    # plt.plot(ATES.output_t.loc[:,"flow"],ATES.output_t.loc[:,"Outlet_T_hotwell"])
-    # plt.xlabel("Volume (m^3) extracted")
-    # plt.ylabel("Temperature out of ATES")
-    # print("Predicted recovery efficiency = ",ATES.reff) 
-    # # This is for multiple cycles. Each cycle containing the amount of volume.
+#     plt.plot(ATES.output_t.loc[:,"flow"],ATES.output_t.loc[:,"Outlet_T_hotwell"])
+#     plt.xlabel("Volume (m^3) extracted")
+#     plt.ylabel("Temperature out of ATES")
+#     print("Predicted recovery efficiency = ",ATES.Reff) 
