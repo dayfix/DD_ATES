@@ -91,7 +91,7 @@ class ATES_obj:
             print('Loading parquet data took {}s'.format(time.time() - start))
         
         # Filter for the last year data
-        self.last_year_data = self.data.drop(self.data[(self.data["Day"]<2554)].index)
+        self.last_year_data = self.data[self.data.Day>2554]
 
     def initialize(self,volume,T_in, len_timestep):
         """
