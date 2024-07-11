@@ -321,16 +321,18 @@ class ATES_obj:
         
         # Interpolation and taking the nearest neighbour messes with the Reff
         # Therefore correct for the Reff again. Reff of ML is quite accurate, so stick to it.
+        # The while loop is likely not necessary anymore, but I did not test that thoroughly. 
         after_inter = sum((temp_out.iloc[-(52*24*7):,0]-self.T_g)*np.diff(temp_out.iloc[-(52*24*7):,1],prepend=min(temp_out.iloc[-(52*24*7):,1])))/((T_in-self.T_g)*volume)
-        factor = 5
-        factor_save=5
+        factor = self.Reff/after_inter
+        factor_save=factor 
         while factor < 0.99 or factor >1.01 :
-            factor = self.Reff/after_inter
             if abs(1/factor_save-1)<abs(factor-1):
                 factor = ((factor)-1)*0.5+1
             temp_out.loc[:,"Outlet_T_hotwell"]=(temp_out.loc[:,"Outlet_T_hotwell"]-self.T_g)*(((factor-1)*1)+1)+self.T_g
             after_inter = sum((temp_out.iloc[-(52*24*7):,0]-self.T_g)*np.diff(temp_out.iloc[-(52*24*7):,1],prepend=min(temp_out.iloc[-(52*24*7):,1])))/((T_in-self.T_g)*volume)
             factor_save=factor
+            factor = self.Reff/after_inter
+
         
         #Save it
         self.output_t = temp_out.copy()
@@ -416,22 +418,22 @@ class ATES_obj:
         self.temp_out=temp_out
         return temp_out
         
-# if __name__ == "__main__":
-#     # Parameters
-#     thickness_aquifer = 20 #[m] Thickness of the aquifer (assuming homogenous and constant thickness)
-#     porosity = 0.2 #[-] porosity aquifer
-#     horizontal_conductivity = 10  #[m day^-1] Horizontal hydraulic conductivity
-#     anisotropy =10 #[-] Horizontal hydraulic conductivity/vertical hydraulic conductivity
-#     ground_temperature = 15 #[degrees C] Undisturbed ground temperature
-#     supplier = 0 
-#     ATES = ATES_obj(thickness=thickness_aquifer, porosity=porosity,kh=horizontal_conductivity, 
-#                     ani=anisotropy,T_ground=ground_temperature,start_full_volume=1)
+if __name__ == "__main__":
+    # Parameters
+    thickness_aquifer = 20 #[m] Thickness of the aquifer (assuming homogenous and constant thickness)
+    porosity = 0.2 #[-] porosity aquifer
+    horizontal_conductivity = 10  #[m day^-1] Horizontal hydraulic conductivity
+    anisotropy =10 #[-] Horizontal hydraulic conductivity/vertical hydraulic conductivity
+    ground_temperature = 15 #[degrees C] Undisturbed ground temperature
+    supplier = 0 
+    ATES = ATES_obj(thickness=thickness_aquifer, porosity=porosity,kh=horizontal_conductivity, 
+                    ani=anisotropy,T_ground=ground_temperature,start_full_volume=1)
     
-#     Volume = 100000 #m^3/year, volume injected as well as extracted (assuming mass balance needs to be preserved)
-#     Temp_in = 70 #[degrees C] Temperature of the water going in the aquifer
-#     ATES.initialize(Volume, Temp_in, 3600) #Generates values for T_out
+    Volume = 100000 #m^3/year, volume injected as well as extracted (assuming mass balance needs to be preserved)
+    Temp_in = 70 #[degrees C] Temperature of the water going in the aquifer
+    ATES.initialize(Volume, Temp_in, 3600) #Generates values for T_out
     
-#     plt.plot(ATES.output_t.loc[:,"flow"],ATES.output_t.loc[:,"Outlet_T_hotwell"])
-#     plt.xlabel("Volume (m^3) extracted")
-#     plt.ylabel("Temperature out of ATES")
-#     print("Predicted recovery efficiency = ",ATES.Reff) 
+    plt.plot(ATES.output_t.loc[:,"flow"],ATES.output_t.loc[:,"Outlet_T_hotwell"])
+    plt.xlabel("Volume (m^3) extracted")
+    plt.ylabel("Temperature out of ATES")
+    print("Predicted recovery efficiency = ",ATES.Reff) 
