@@ -348,7 +348,8 @@ class ATES_obj:
 
     def calculate_flow(self, volume, PerPerYear):
         """
-        Calculates the flow based on the provided volume.
+        Calculates the flow based on the provided volume. 
+        This is the flow profile used in the feed-forward MODFLOW model, on which the "results_filtered" dataset is based.        
 
         Parameters
         ----------
@@ -360,7 +361,7 @@ class ATES_obj:
         Returns
         -------
         np.ndarray
-            Array representing the calculated flow.
+            Array representing the calculated flow for every week for 8 years.
         """
         sum_sine = 0
         periods_per_half_year = int(PerPerYear / 2)
