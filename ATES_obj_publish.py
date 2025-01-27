@@ -60,7 +60,7 @@ class ATES_obj:
     
     def __init__(self, thickness = 20, porosity = 0.3, kh = 10, 
                  ani = 10, T_ground = 10,
-                 start_full_volume = 1,timing=False):
+                 start_full_volume = True,timing=False):
         
         # Save data
         self.name = 'ATES'
@@ -80,12 +80,7 @@ class ATES_obj:
             start = time.time()
         
         # Get data from earlier research, saved in parquet file and manipulate it 
-        self.data = pd.read_parquet('results_filtered')
-        self.data.drop(self.data.columns[10], axis=1,inplace=True)
-        self.data.drop(self.data.columns[5], axis=1, inplace = True)
-        self.data.drop(self.data.columns[3], axis=1, inplace = True)
-        self.data.drop(self.data[(self.data["Efficiency_hotwell_lastyear"]>1)].index, inplace=True)
-        
+        self.data=pd.read_parquet("results_AXI")
         # Find time for looading data
         if timing:
             print('Loading parquet data took {}s'.format(time.time() - start))
@@ -145,7 +140,7 @@ class ATES_obj:
             start = time.time()
             
         #%% Step 3: Correct data for volume
-        if self.start_full_volume != 0.5:
+        if self.start_full_volume != True:
             temp_out = self.Correct_half_volume(temp_out)
         
         self.correct_for_volume(volume, T_in,temp_out, len_timestep)
@@ -181,7 +176,7 @@ class ATES_obj:
         # Prepare inputs for prediction
         Reff = model.predict(pd.DataFrame({'Porosity':self.por,
                                            "Volume" :volume,
-                                           "T_injected" :T_in,
+                                           "T_injected_hot" :T_in,
                                            "T_ground":self.T_g,
                                            "thickness aquifer" :self.thickness,
                                            'Hydraulic conductivity aquifer':self.kh,
@@ -224,7 +219,7 @@ class ATES_obj:
         """
         #Calculate relative distances
         relative_distance_1 = abs(((self.data["T_injected_hot"])-(T_in))/90)#(T_in))
-        relative_distance_2 = abs((self.data["Efficiency_hotwell_lastyear"]-reff)/0.9)#/reff)
+        relative_distance_2 = abs((self.data["Efficiency_well_lastyear"]-reff)/0.9)#/reff)
         relative_distance_3 = abs((self.data["T_ground"]-self.T_g)/30)#self.T_g)
         # Legacy aspect
         #relative_distance_4 = 0#abs((self.data["Volume"]-volume)/volume)
@@ -342,9 +337,9 @@ class ATES_obj:
         # Correct flow of the last year, for earlier flows
         self.output_t_lastyear.loc[:,"flow"] = self.output_t_lastyear["flow"] - min(self.output_t_lastyear["flow"]) 
         difference = np.diff(self.output_t_lastyear["flow"],prepend= 0)
-        T_ave = sum((self.output_t_lastyear.loc[:,"Outlet_T_hotwell"])*difference)/sum(difference)
         self.output_t_lastyear = self.output_t_lastyear[difference>0]
-        Reff_calc= (T_ave-self.T_g)/(T_in-self.T_g)
+        #T_ave = sum((self.output_t_lastyear.loc[:,"Outlet_T_hotwell"])*difference)/sum(difference)
+        #Reff_calc= (T_ave-self.T_g)/(T_in-self.T_g)
 
     def calculate_flow(self, volume, PerPerYear):
         """
@@ -379,7 +374,9 @@ class ATES_obj:
         return flow
     
     def func_fit(self,x, a, b,c): # polytrope equation from zunzun.com
+        #Currently unused    
         return a+b/(2**(x/c))
+    
     
     def Correct_half_volume(self, temp_out):
         """
@@ -401,22 +398,11 @@ class ATES_obj:
         and adjusting the values accordingly.      
         """
         
-        # Identify half-volume cycles
-        index =np.reshape(np.array(argrelextrema(np.array(temp_out),np.less,order=20)),8)
-        output = np.array(temp_out.iloc[index])
-        index = ((index-13)/52)
-        
-        # Fit a curve to the identified cycles
-        popt, pcov = curve_fit(self.func_fit, index, output,p0=[35,-8.2,0.77])
-        
-        # Correct half-volume cycles for the first five years, after which the data is more accurate
-        for j in range(5):
-            min_half_cycle = temp_out-max(temp_out)
-            min_full_cycle = self.func_fit(j+self.start_full_volume,*popt)-max(temp_out)
-            min_value_half_cycle = output[j]-max(temp_out)
-            factor = min_full_cycle/min_value_half_cycle
-            temp_out[j*52:(j+1)*52] = min_half_cycle[j*52:(j+1)*52]*factor+max(temp_out)
-        self.temp_out=temp_out
+        # Skip the first year of the temperature profile
+        keep = temp_out[52:417]
+        add = temp_out[417-52:417]
+        temp_out = pd.concat([keep,add])
+        temp_out.reset_index(drop=True,inplace=True)
         return temp_out
         
 if __name__ == "__main__":
