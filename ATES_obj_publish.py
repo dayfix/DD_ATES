@@ -5,7 +5,6 @@ import joblib
 from scipy.signal import argrelextrema
 from scipy.optimize import curve_fit
 import time 
-x = TEST
 class ATES_obj:
     """
     Data-driven ATES model.
